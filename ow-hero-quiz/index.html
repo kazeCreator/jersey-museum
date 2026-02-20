@@ -122,6 +122,10 @@ const POOLS = {
   }
 };
 
+const HERO_ZH = {
+  'ana':'安娜','anran':'安然','ashe':'艾什','baptiste':'巴蒂斯特','bastion':'堡垒','brigitte':'布丽吉塔','cassidy':'卡西迪','domina':'多米娜','doomfist':'末日铁拳','dva':'D.Va','echo':'回声','emre':'埃姆雷','freja':'芙蕾雅','genji':'源氏','hanzo':'半藏','hazard':'哈泽德','illari':'伊拉锐','jetpack-cat':'喷气猫','junker-queen':'渣客女王','junkrat':'狂鼠','juno':'朱诺','kiriko':'雾子','lifeweaver':'生命之梭','lucio':'卢西奥','mauga':'毛加','mei':'小美','mercy':'天使','moira':'莫伊拉','orisa':'奥丽莎','pharah':'法老之鹰','ramattra':'拉玛刹','reaper':'死神','reinhardt':'莱因哈特','roadhog':'路霸','sigma':'西格玛','sojourn':'索杰恩','soldier-76':'士兵：76','sombra':'黑影','symmetra':'秩序之光','torbjorn':'托比昂','tracer':'猎空','vendetta':'维德塔','venture':'探奇','widowmaker':'黑百合','winston':'温斯顿','wrecking-ball':'破坏球','wuyang':'无漾','zarya':'查莉娅','zenyatta':'禅雅塔'
+};
+
 let HEROES = [];
 let heroByKey = {};
 let latest = null;
@@ -188,7 +192,7 @@ function pickHeroes(role,style,count=4){
   return [...existing,...extras];
 }
 
-function roleLabel(r){return r==='dps'?'输出位 DPS':r==='tank'?'坦克位 Tank':'辅助位 Support'}
+function roleLabel(r){return r==='dps'?'输出位':r==='tank'?'坦克位':'辅助位'}
 function styleLabel(s){return s==='flanker'?'切后排/高机动':s==='poke'?'拉枪线/消耗':s==='brawl'?'正面缠斗/压空间':'全能平衡'}
 
 function metricHTML(name,score,max){
@@ -209,10 +213,19 @@ function drawRadar(vals){
   ctx.beginPath();for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;const rr=r*vals[i];const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fillStyle='rgba(255,158,74,.30)';ctx.strokeStyle='rgba(110,168,254,.95)';ctx.lineWidth=2;ctx.fill();ctx.stroke();
 }
 
+function heroDisplayName(key){
+  const h = heroByKey[key];
+  return HERO_ZH[key] || h?.name || key;
+}
+
+function heroPortraitPath(key){
+  return `assets/heroes-real/${key}.png`;
+}
+
 function renderHeroGrid(el, keys){
   document.getElementById(el).innerHTML = keys.map(k=>{
-    const h=heroByKey[k];
-    return `<div class="hero"><img src="${h.portrait}" alt="${h.name}" loading="lazy" referrerpolicy="no-referrer"><div class="n">${h.name}</div></div>`;
+    const n = heroDisplayName(k);
+    return `<div class="hero"><img src="${heroPortraitPath(k)}" alt="${n}" loading="lazy"><div class="n">${n}</div></div>`;
   }).join('');
 }
 
@@ -243,8 +256,8 @@ function render(){
   tips.push('每周固定复盘2局，记录“死亡原因”和“技能空窗期”。');
   document.getElementById('tips').innerHTML=tips.map(t=>`<li>${t}</li>`).join('');
 
-  const mainNames=main.map(k=>heroByKey[k].name).join(' / ');
-  const subNames=sub.map(k=>heroByKey[k].name).join(' / ');
+  const mainNames=main.map(k=>heroDisplayName(k)).join(' / ');
+  const subNames=sub.map(k=>heroDisplayName(k)).join(' / ');
   const txt=`我的守望匹配：主定位${roleLabel(c.mainRole)}，副定位${roleLabel(c.subRole)}，风格${styleLabel(c.style)}。\n主练：${mainNames}\n副练：${subNames}`;
   document.getElementById('shareText').textContent=txt;
 
@@ -262,7 +275,16 @@ function wrapText(ctx,text,x,y,maxWidth,lineHeight){
   if(line) ctx.fillText(line,x,yy)
 }
 
-function posterCanvas(){
+function loadImage(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=reject;
+    img.src=src;
+  });
+}
+
+async function posterCanvas(){
   if(!latest) return null;
   const {c,main,sub}=latest;
   const canvas=document.createElement('canvas'); canvas.width=1080; canvas.height=1440; const ctx=canvas.getContext('2d');
@@ -280,9 +302,28 @@ function posterCanvas(){
   ctx.beginPath();for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;const rr=r*vals[i];const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fillStyle='rgba(255,158,74,.30)';ctx.strokeStyle='#6ea8fe';ctx.lineWidth=5;ctx.fill();ctx.stroke();
 
   ctx.textAlign='left'; ctx.fillStyle='#eef3ff'; ctx.font='700 34px Inter';
-  ctx.fillText('主练英雄',560,360); ctx.font='500 28px Inter'; ctx.fillStyle='#d9e4ff'; wrapText(ctx,main.map(k=>heroByKey[k].name).join(' / '),560,406,430,38);
-  ctx.fillStyle='#eef3ff'; ctx.font='700 34px Inter'; ctx.fillText('副练英雄',560,500); ctx.font='500 28px Inter'; ctx.fillStyle='#d9e4ff'; wrapText(ctx,sub.map(k=>heroByKey[k].name).join(' / '),560,546,430,38);
+  ctx.fillText('主练英雄',560,340);
+  ctx.fillText('副练英雄',560,520);
 
+  // Draw hero portraits on poster
+  const drawRow = async (keys, y) => {
+    for(let i=0;i<keys.length;i++){
+      const k=keys[i];
+      const x=560 + i*120;
+      const img=await loadImage(heroPortraitPath(k));
+      ctx.save();
+      ctx.beginPath(); ctx.roundRect(x, y, 96, 96, 14); ctx.clip();
+      ctx.drawImage(img, x, y, 96, 96);
+      ctx.restore();
+      ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.strokeRect(x, y, 96, 96);
+      ctx.fillStyle='#d9e4ff'; ctx.font='500 16px Inter'; ctx.textAlign='center';
+      ctx.fillText(heroDisplayName(k), x+48, y+116);
+    }
+  };
+  await drawRow(main, 360);
+  await drawRow(sub, 540);
+
+  ctx.textAlign='left';
   ctx.fillStyle='#eef3ff'; ctx.font='700 32px Inter'; ctx.fillText('一句建议',90,760); ctx.font='500 28px Inter'; ctx.fillStyle='#d9e4ff';
   const tip = c.mainRole==='tank'?'先带节奏再吃资源，进退口令清晰。':c.mainRole==='support'?'关键技能留反手，保核心输出。':'先打到再打死，保持存活输出。';
   wrapText(ctx,`• ${tip}`,90,808,900,40);
@@ -292,9 +333,9 @@ function posterCanvas(){
   return canvas;
 }
 
-function downloadPoster(){const c=posterCanvas(); if(!c) return; const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=`ow-quiz-${Date.now()}.png`; a.click();}
+async function downloadPoster(){const c=await posterCanvas(); if(!c) return; const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=`ow-quiz-${Date.now()}.png`; a.click();}
 async function sharePoster(){
-  const c=posterCanvas(); if(!c) return;
+  const c=await posterCanvas(); if(!c) return;
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));
   const file=new File([blob],'ow-quiz-result.png',{type:'image/png'});
   if(navigator.canShare && navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'守望英雄匹配结果',text:'我测了我的守望本命英雄，来试试！'});}else{downloadPoster();alert('当前浏览器不支持文件分享，已为你下载海报。');}
@@ -306,9 +347,9 @@ async function loadHeroes(){
   const live='https://overfast-api.tekrop.fr/heroes';
   try{
     const res=await fetch(live,{cache:'no-store'}); const all=await res.json();
-    HEROES=all.filter(h=>h.gamemodes?.includes('quickplay')).map(h=>({key:h.key,name:h.name,role:h.role,portrait:h.portrait}));
+    HEROES=all.filter(h=>h.gamemodes?.includes('quickplay')).map(h=>({key:h.key,name:h.name,role:h.role}));
   }catch{
-    const res=await fetch('./data/heroes-live.json'); const j=await res.json(); HEROES=j.heroes;
+    const res=await fetch('./data/heroes-live.json'); const j=await res.json(); HEROES=j.heroes.map(h=>({key:h.key,name:h.name,role:h.role}));
   }
   heroByKey={}; HEROES.forEach(h=>heroByKey[h.key]=h);
 }
