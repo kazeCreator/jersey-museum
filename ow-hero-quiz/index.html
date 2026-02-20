@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>守望先锋英雄匹配问卷（全段位）</title>
     <meta name="description" content="定位+英雄池+主练副练建议，2-3分钟测出更适合你的守望先锋玩法。" />
     <style>
@@ -16,13 +16,18 @@
         --ok: #7ce38b;
       }
       * { box-sizing: border-box; }
+      html, body { overscroll-behavior-y: contain; }
       body {
         margin: 0;
         color: var(--text);
         font-family: Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
         background: radial-gradient(1100px 580px at 20% -20%, #1d2b67 0%, var(--bg) 55%);
       }
-      .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 56px; }
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 20px 16px calc(86px + env(safe-area-inset-bottom, 0px));
+      }
       .card {
         background: linear-gradient(180deg, #141f45 0%, var(--card) 100%);
         border: 1px solid var(--line);
@@ -32,24 +37,178 @@
       }
       h1 { margin: 0 0 8px; font-size: 28px; }
       .sub { color: var(--muted); margin: 0 0 14px; }
-      .q { margin: 12px 0; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: rgba(255,255,255,.02); }
-      .q p { margin: 0 0 8px; }
-      .scale { display:grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap:8px; }
-      .opt { display:flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--line); border-radius:8px; padding:8px; cursor:pointer; font-size:13px; }
-      .opt input { accent-color: var(--accent); }
-      .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top: 14px; }
-      button { border:0; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
+
+      .progress-wrap {
+        position: sticky;
+        top: 8px;
+        z-index: 5;
+        margin: 10px 0 14px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(10,16,34,.92);
+        backdrop-filter: blur(4px);
+      }
+      .progress-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .progress {
+        margin-top: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.08);
+        overflow: hidden;
+      }
+      .progress > i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg,#6ea8fe,#7ce38b);
+        transition: width .25s ease;
+      }
+
+      .legend {
+        margin: 8px 0 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .q {
+        margin: 12px 0;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+        background: rgba(255,255,255,.02);
+      }
+      .q p {
+        margin: 0 0 10px;
+        line-height: 1.5;
+      }
+      .q.unanswered {
+        border-color: rgba(255, 170, 170, .55);
+      }
+
+      .scale {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0,1fr));
+        gap: 8px;
+      }
+      .opt {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        min-height: 44px;
+        padding: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        user-select: none;
+      }
+      .opt input {
+        accent-color: var(--accent);
+        transform: scale(1.1);
+      }
+      .opt:has(input:checked) {
+        border-color: rgba(110,168,254,.9);
+        background: rgba(110,168,254,.16);
+      }
+
+      .btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 11px 14px;
+        min-height: 44px;
+        cursor: pointer;
+        font-weight: 700;
+      }
       .primary { background: var(--accent); color: #081531; }
       .ghost { background: rgba(255,255,255,.1); color: var(--text); }
-      .result { display:none; margin-top:14px; border:1px solid var(--line); border-radius: 12px; padding: 14px; background: rgba(255,255,255,.02); }
-      .tag { display:inline-block; background: rgba(124,227,139,.18); color: var(--ok); border-radius: 999px; padding: 4px 10px; font-weight:700; }
-      .grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:10px; margin: 10px 0 14px; }
-      .metric { border:1px solid var(--line); border-radius: 10px; padding: 10px; background: rgba(255,255,255,.02); }
-      .bar { margin-top:7px; height:8px; border-radius:999px; background: rgba(255,255,255,.08); overflow:hidden; }
-      .bar > i { display:block; height:100%; background: linear-gradient(90deg,#6ea8fe,#7ce38b); }
+
+      .mobile-actions {
+        display: none;
+      }
+
+      .result {
+        display: none;
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        background: rgba(255,255,255,.02);
+      }
+      .tag {
+        display: inline-block;
+        background: rgba(124,227,139,.18);
+        color: var(--ok);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-weight: 700;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2,minmax(0,1fr));
+        gap: 10px;
+        margin: 10px 0 14px;
+      }
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: rgba(255,255,255,.02);
+      }
+      .bar {
+        margin-top: 7px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.08);
+        overflow: hidden;
+      }
+      .bar > i {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg,#6ea8fe,#7ce38b);
+      }
       .small { color: var(--muted); font-size: 13px; }
       .footer { margin-top:16px; color: var(--muted); font-size: 12px; }
-      @media (max-width: 640px){ h1 { font-size:24px; } .grid { grid-template-columns:1fr; } }
+
+      @media (max-width: 640px){
+        h1 { font-size: 24px; }
+        .wrap { padding: 14px 12px calc(96px + env(safe-area-inset-bottom, 0px)); }
+        .card { padding: 14px; }
+        .grid { grid-template-columns: 1fr; }
+        .q { padding: 10px; }
+        .scale { gap: 6px; }
+        .opt { min-height: 46px; font-size: 13px; padding: 6px; }
+
+        .btns { display: none; }
+        .mobile-actions {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 20;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 8px;
+          padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+          background: rgba(10,16,34,.95);
+          backdrop-filter: blur(8px);
+          border-top: 1px solid var(--line);
+        }
+        .mobile-actions .ghost { padding-inline: 12px; }
+      }
     </style>
   </head>
   <body>
@@ -57,6 +216,15 @@
       <div class="card">
         <h1>守望先锋英雄匹配问卷</h1>
         <p class="sub">全段位可用｜2-3 分钟｜输出：定位 + 英雄池 + 主练/副练建议</p>
+
+        <div class="progress-wrap">
+          <div class="progress-head">
+            <span id="progressText">已完成 0 / 12</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress"><i id="progressBar"></i></div>
+          <div class="legend">1=完全不符合，5=非常符合</div>
+        </div>
 
         <form id="quiz"></form>
 
@@ -88,9 +256,13 @@
       </div>
     </div>
 
+    <div class="mobile-actions">
+      <button class="primary" type="button" id="calcBtnMobile">生成结果</button>
+      <button class="ghost" type="button" id="copyBtnMobile" disabled>复制</button>
+    </div>
+
     <script>
       const questions = [
-        // 核心10题
         '我喜欢高机动、频繁拉扯、打“极限操作”。',
         '团战里我能同时兼顾多个信息（敌方位置/CD/队友状态）。',
         '我更喜欢“开团冲锋”，而不是“后排慢磨”。',
@@ -101,7 +273,6 @@
         '我对关键技能时机把握不错（保命/反打/开团）。',
         '我能快速判断“该进攻还是该撤退”。',
         '我愿意主动报点、沟通、打配合。',
-        // 校准2题
         '遇到逆风局，我更倾向于稳住节奏而不是硬拼。',
         '我愿意为了团队阵容补位，即使不是自己最想玩的英雄。'
       ];
@@ -111,6 +282,7 @@
         const i = idx + 1;
         const div = document.createElement('div');
         div.className = 'q';
+        div.dataset.index = i;
         div.innerHTML = `<p><b>${i}.</b> ${text}</p><div class="scale">${[1,2,3,4,5].map(v=>`<label class="opt"><input type="radio" name="q${i}" value="${v}">${v}</label>`).join('')}</div>`;
         quiz.appendChild(div);
       });
@@ -118,13 +290,33 @@
       const val = n => Number((document.querySelector(`input[name=q${n}]:checked`) || {}).value || 0);
       const allAnswered = () => Array.from({length: 12}, (_,k)=>val(k+1)).every(Boolean);
 
+      function updateProgress() {
+        const done = Array.from({length: 12}, (_,k)=>val(k+1)).filter(Boolean).length;
+        const percent = Math.round((done / 12) * 100);
+        document.getElementById('progressText').textContent = `已完成 ${done} / 12`;
+        document.getElementById('progressPercent').textContent = `${percent}%`;
+        document.getElementById('progressBar').style.width = `${percent}%`;
+      }
+
+      function markUnanswered() {
+        document.querySelectorAll('.q').forEach((q, idx) => {
+          q.classList.toggle('unanswered', !val(idx + 1));
+        });
+      }
+
+      function focusFirstUnanswered() {
+        const first = Array.from(document.querySelectorAll('.q')).find((_, idx) => !val(idx + 1));
+        if (first) {
+          first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
       function scores(){
-        // 1-10核心 + 11/12校准
         const DPS = val(1)+val(4)+val(7);
         const Tank = val(3)+val(9)+val(10);
         const Support = val(5)+val(6)+val(8);
         const Flanker = val(1)+val(2)+val(4);
-        const Stable = val(11)+val(12); // 稳健/补位倾向（2-10）
+        const Stable = val(11)+val(12);
         return { DPS, Tank, Support, Flanker, Stable };
       }
 
@@ -174,15 +366,11 @@
         };
 
         const cfg = map[main];
-        const useAgg = aggressive;
-        const useBal = !aggressive; // balanced or stable -> 走稳健分支
-
-        const heroes = useAgg ? cfg.heroesAgg : cfg.heroesBal;
-        const route = useAgg ? cfg.routeAgg : cfg.routeBal;
-        const tips = useAgg ? cfg.tipsAgg : cfg.tipsBal;
-
+        const heroes = aggressive ? cfg.heroesAgg : cfg.heroesBal;
+        const route = aggressive ? cfg.routeAgg : cfg.routeBal;
+        const tips = aggressive ? cfg.tipsAgg : cfg.tipsBal;
         const sideMsg = `副定位倾向：${second}。` + (balanced ? ' 你属于“能打能稳”的平衡型。' : '');
-        return { main, second, cfg, heroes, route, tips, sideMsg };
+        return { cfg, heroes, route, tips, sideMsg };
       }
 
       function metricCard(name, score, max){
@@ -192,8 +380,13 @@
 
       let latestShare = '';
 
-      document.getElementById('calcBtn').addEventListener('click', () => {
-        if (!allAnswered()) return alert('还有题目没选完，先全部作答。');
+      function renderResult() {
+        if (!allAnswered()) {
+          markUnanswered();
+          focusFirstUnanswered();
+          return alert('还有题目没选完，先全部作答。');
+        }
+
         const s = scores();
         const r = getProfile(s);
 
@@ -216,11 +409,13 @@
         latestShare = `我的守望英雄匹配结果：${r.cfg.tag}｜${r.cfg.title}。\n推荐英雄池：${r.heroes}\n主练/副练：${r.route}`;
         document.getElementById('shareText').textContent = latestShare;
         document.getElementById('copyBtn').disabled = false;
+        document.getElementById('copyBtnMobile').disabled = false;
 
+        markUnanswered();
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      });
+      }
 
-      document.getElementById('copyBtn').addEventListener('click', async () => {
+      async function copyResult() {
         if (!latestShare) return;
         try {
           await navigator.clipboard.writeText(latestShare);
@@ -228,15 +423,31 @@
         } catch {
           alert('复制失败，请手动长按复制。');
         }
-      });
+      }
+
+      document.getElementById('calcBtn').addEventListener('click', renderResult);
+      document.getElementById('calcBtnMobile').addEventListener('click', renderResult);
+      document.getElementById('copyBtn').addEventListener('click', copyResult);
+      document.getElementById('copyBtnMobile').addEventListener('click', copyResult);
 
       document.getElementById('resetBtn').addEventListener('click', () => {
         document.querySelectorAll('input[type=radio]').forEach(i => i.checked = false);
         document.getElementById('resultBox').style.display = 'none';
         document.getElementById('copyBtn').disabled = true;
+        document.getElementById('copyBtnMobile').disabled = true;
         latestShare = '';
+        markUnanswered();
+        updateProgress();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
+
+      quiz.addEventListener('change', () => {
+        updateProgress();
+        markUnanswered();
+      });
+
+      updateProgress();
+      markUnanswered();
     </script>
   </body>
 </html>
