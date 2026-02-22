@@ -7,13 +7,6 @@
     "mediaHosts": ["www.footyheadlines.com", "blogger.googleusercontent.com", "lh3.googleusercontent.com"]
   },
   {
-    "name": "BBC Football",
-    "url": "https://feeds.bbci.co.uk/sport/football/rss.xml",
-    "site": "https://www.bbc.com/sport/football",
-    "hostPins": ["feeds.bbci.co.uk"],
-    "mediaHosts": ["www.bbc.com", "ichef.bbci.co.uk", "feeds.bbci.co.uk"]
-  },
-  {
     "name": "UEFA News",
     "url": "https://www.uefa.com/rssfeed/news/rss.xml",
     "site": "https://www.uefa.com",
