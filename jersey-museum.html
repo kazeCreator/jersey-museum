@@ -119,13 +119,21 @@ function render(items){
 }
 
 async function fetchWikimediaImage(query){
-  // 优先在 Wikimedia Commons 的文件命名空间里找“Kit”图片文件
-  const url='https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srlimit=8&format=json&origin=*&srsearch=' + encodeURIComponent(query);
+  // 实物图优先：Commons 文件搜索，优先 jpg/jpeg/webp 照片，排除 kit 模板图
+  const url='https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srlimit=12&format=json&origin=*&srsearch=' + encodeURIComponent(query);
   const res=await fetch(url);
   if(!res.ok) return null;
   const data=await res.json();
   const rows=data?.query?.search || [];
-  const pick=rows.find(r => /File:.*(Kit|kit|jersey|shirt)/.test(r.title || '')) || rows[0];
+
+  const isPhotoFile = (title='') => /\.(jpg|jpeg|webp)$/i.test(title);
+  const isTemplateKit = (title='') => /(kit|jersey\s*template|kit\s*body|pattern|svg)/i.test(title);
+
+  const pick = rows.find(r => {
+    const t = (r.title || '').replace(/^File:/, '');
+    return isPhotoFile(t) && !isTemplateKit(t);
+  });
+
   if(!pick?.title) return null;
   const fileName=(pick.title || '').replace(/^File:/,'');
   if(!fileName) return null;
@@ -146,14 +154,14 @@ async function hydrateRealImages(items){
     }
     if(cache[it.id]){ el.src=cache[it.id]; if(cap) cap.textContent='图片：Wikimedia Commons'; continue; }
     try{
-      const q=`${it.entity} ${it.year} ${it.type==='Home'?'home':'away'} kit`;
+      const q=`${it.entity} ${it.player||''} ${it.year} ${it.type==='Home'?'home':'away'} football`;
       const hit=await fetchWikimediaImage(q);
       if(hit){
         cache[it.id]=hit;
         el.src=hit;
-        if(cap) cap.textContent='图片：Wikimedia Commons（球衣）';
+        if(cap) cap.textContent='图片：Wikimedia Commons（实物图）';
       } else {
-        if(cap) cap.textContent='图片：暂无匹配球衣图';
+        if(cap) cap.textContent='图片：暂无匹配实物图';
       }
     }catch(e){}
   }
