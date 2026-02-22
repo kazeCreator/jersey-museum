@@ -39,6 +39,29 @@ const TEAM_ALIASES = {
 
 const KIT_KEYWORDS = ['kit', 'jersey', 'shirt', 'home kit', 'away kit', 'third kit', '球衣', '主场', '客场'];
 
+
+function safeUrl(raw) {
+  try { return new URL(raw); } catch { return null; }
+}
+
+function isTrustedHttps(raw, allowedHosts) {
+  const u = safeUrl(raw);
+  if (!u) return false;
+  if (u.protocol !== 'https:') return false;
+  const host = u.hostname.toLowerCase();
+  return [...allowedHosts].some(h => host === h || host.endsWith('.' + h));
+}
+
+const TRUSTED_HOSTS = (() => {
+  const set = new Set();
+  for (const s of sources) {
+    const a = safeUrl(s.url); if (a) set.add(a.hostname.toLowerCase());
+    const b = safeUrl(s.site); if (b) set.add(b.hostname.toLowerCase());
+  }
+  return set;
+})();
+
+
 function strip(s = '') { return s.replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); }
 function era(y){ if(y<2000)return '90s'; if(y<2010)return '00s'; if(y<2020)return '10s'; return '20s'; }
 
@@ -75,7 +98,10 @@ function credibilityFor(url, base = 80){
 }
 
 async function fetchSource(src) {
-  const res = await fetch(src.url, { headers: { 'user-agent': 'jersey-sync-bot/1.0' } });
+  if (!isTrustedHttps(src.url, TRUSTED_HOSTS) || !isTrustedHttps(src.site, TRUSTED_HOSTS)) {
+    throw new Error(`${src.name} blocked by trust policy`);
+  }
+  const res = await fetch(src.url, { headers: { 'user-agent': 'jersey-sync-bot/1.0' }, redirect: 'follow' });
   if (!res.ok) throw new Error(`${src.name} ${res.status}`);
   const xml = await res.text();
   return parseItems(xml).map(i => ({ ...i, source: src.name, source_url: src.site }));
@@ -90,6 +116,8 @@ function mapToRecord(item) {
   const year = Number((item.pubDate.match(/\b(20\d{2})\b/) || [new Date().getFullYear()])[0]);
   const type = /away/i.test(combo) ? 'Away' : /third/i.test(combo) ? 'Third' : 'Home';
 
+  if (!isTrustedHttps(item.link, TRUSTED_HOSTS)) return null;
+  const trustedImage = isTrustedHttps(item.image, TRUSTED_HOSTS) ? item.image : '';
   const idHash = crypto.createHash('md5').update(item.link).digest('hex').slice(0, 10);
   return {
     id: `live-${idHash}`,
@@ -106,7 +134,7 @@ function mapToRecord(item) {
     brand: 'Unknown',
     type,
     colorway: 'TBD',
-    image_official_url: item.image || '',
+    image_official_url: trustedImage,
     image_url: `https://placehold.co/640x800/f2f2f2/1f1f1f.png?text=${encodeURIComponent(info.entity + ' ' + year + ' ' + type + ' Kit')}`,
     design_background: item.title,
     cultural_notes: strip(item.description).slice(0, 180),
@@ -150,6 +178,8 @@ async function main(){
   }
 
   const mapped = dedup(all.map(mapToRecord).filter(Boolean)).slice(0, 120);
+  const blocked = all.length - mapped.length;
+  if (blocked > 0) console.log(`blocked_or_irrelevant=${blocked}`);
   const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
   const merged = mergeDb(db, mapped);
 
