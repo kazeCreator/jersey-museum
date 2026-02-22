@@ -11,7 +11,7 @@ let existing = [];
 try { existing = JSON.parse(fs.readFileSync(outPath, 'utf8')); } catch {}
 const existingMap = new Map(existing.map(x => [x.id, x]));
 
-const stopWords = /(logo|crest|badge|flag|stadium|manager|coach|map|icon)/i;
+const stopWords = /(logo|crest|badge|flag|stadium|manager|coach|map|icon|template|kit[_\s-]?body|pattern|svg|vector|mockup|concept)/i;
 const extOk = /\.(jpg|jpeg|webp|png)$/i;
 
 async function commonsSearch(query) {
@@ -39,8 +39,9 @@ function scoreCandidate(title, item) {
   if (player && player !== 'team edition' && t.includes(player.split(' ')[0])) s += 5;
   if (entity && t.includes(entity.split(' ')[0])) s += 3;
   if (year && t.includes(year)) s += 2;
-  if (/jersey|shirt|kit|home|away|match|vs|v\./i.test(t)) s += 2;
-  if (/cropped|portrait/.test(t)) s += 1; // 球员上身图仍可接受
+  if (/match|vs|v\.|training|celebration|action|during/i.test(t)) s += 3;
+  if (/portrait|headshot|passport/.test(t)) s -= 2;
+  if (/kit|jersey|shirt/.test(t)) s -= 1; // 避免设计模板命名
   return s;
 }
 
@@ -48,7 +49,9 @@ async function findImage(item) {
   const queries = [
     `${item.player} ${item.entity} ${item.year} ${item.type} football`,
     `${item.player} ${item.entity} football`,
-    `${item.entity} ${item.year} ${item.type} football`
+    `${item.entity} ${item.year} ${item.type} football`,
+    `${item.player} football`,
+    `${item.entity} football player`
   ].filter(Boolean);
 
   for (const q of queries) {
@@ -76,7 +79,7 @@ async function main() {
     existingMap.set(item.id, {
       id: item.id,
       image_url: found.url,
-      caption: '图片：人工维护库（实拍/比赛图）',
+      caption: '图片：人工维护库（实物实拍）',
       source_url: 'https://commons.wikimedia.org/wiki/' + encodeURIComponent(found.title.replace(/\s/g, '_')),
       source: 'Wikimedia Commons',
       image_quality: 'player_wearing'
