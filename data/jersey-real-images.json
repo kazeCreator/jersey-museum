@@ -1834,5 +1834,23 @@
     "source": "Wikimedia Commons",
     "image_quality": "jersey_product",
     "confidence": 0.9
+  },
+  {
+    "id": "live-0318fd2642-away",
+    "image_url": "https://static.nike.com/a/images/t_default/a5aff61e-4066-4b8a-b537-03cf91ad9c03/CFC+M+NK+DFADV+JSY+SS+MATCH+AW.png",
+    "caption": "图片：商城商品图（自动）",
+    "source_url": "https://www.nike.com/t/chelsea-fc-2025-26-match-away-mens-dri-fit-adv-soccer-authentic-jersey-fX1ss9",
+    "source": "www.nike.com",
+    "image_quality": "jersey_product",
+    "confidence": 0.92
+  },
+  {
+    "id": "live-2514f76082-home",
+    "image_url": "https://assets.adidas.com/images/c_fill,g_auto,w_1200,h_630,f_auto,q_auto/w_600,f_auto,q_auto/87609d586bfa499f9fe1fe810d969b2f_9366/Spain_26_Home_Authentic_Jersey_Red_JN4366_HM53.jpg",
+    "caption": "图片：商城商品图（自动）",
+    "source_url": "https://www.adidas.com/us/spain-26-home-authentic-jersey/JN4366.html",
+    "source": "www.adidas.com",
+    "image_quality": "jersey_product",
+    "confidence": 0.92
   }
 ]
