@@ -46,7 +46,15 @@ function parseItems(xml) {
   const block = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
   return block.map(item => {
     const read = tag => strip((item.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i')) || [,''])[1]);
-    return { title: read('title'), link: read('link'), pubDate: read('pubDate'), description: read('description') };
+    const enclosureUrl = ((item.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*>/i) || [,''])[1] || '').trim();
+    const mediaUrl = ((item.match(/<media:content[^>]*url=["']([^"']+)["'][^>]*>/i) || [,''])[1] || '').trim();
+    return {
+      title: read('title'),
+      link: read('link'),
+      pubDate: read('pubDate'),
+      description: read('description'),
+      image: enclosureUrl || mediaUrl || ''
+    };
   });
 }
 
@@ -98,6 +106,7 @@ function mapToRecord(item) {
     brand: 'Unknown',
     type,
     colorway: 'TBD',
+    image_official_url: item.image || '',
     image_url: `https://placehold.co/640x800/f2f2f2/1f1f1f.png?text=${encodeURIComponent(info.entity + ' ' + year + ' ' + type + ' Kit')}`,
     design_background: item.title,
     cultural_notes: strip(item.description).slice(0, 180),

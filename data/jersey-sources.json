@@ -13,5 +13,10 @@
     "name": "UEFA News",
     "url": "https://www.uefa.com/rssfeed/news/rss.xml",
     "site": "https://www.uefa.com"
+  },
+  {
+    "name": "Manchester United News",
+    "url": "https://www.manutd.com/feeds/latestnews",
+    "site": "https://www.manutd.com"
   }
 ]

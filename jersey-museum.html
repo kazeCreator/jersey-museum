@@ -111,8 +111,9 @@ function render(items){
   if(!items.length){c.innerHTML='<article class="card"><h3>暂无结果</h3><p>换个筛选条件试试。</p></article>';return}
   c.innerHTML=items.map(x=>{const own=state.owned.has(x.id);const [rt,rc]=riskClass(x.credibility||0);
     const typeLabel=x.type==='Home'?'主场':x.type==='Away'?'客场':x.type;
-    const img=x.image_url||`https://placehold.co/640x800/f2f2f2/1f1f1f.png?text=${encodeURIComponent(x.entity+' '+x.year+' '+typeLabel)}`;
-    return `<article class="card"><div class="tag">${x.category==='club'?'俱乐部':'国家队'} · ${x.league} · ${x.year}</div><h3>${x.entity}</h3><div class="subtitle">${x.player} · ${x.brand} · ${typeLabel}</div><img class="kitimg" data-id="${x.id}" src="${img}" alt="${x.entity} ${x.year} ${typeLabel}球衣" loading="lazy"/><div class="imgcap" id="cap-${x.id}">图片：馆藏图</div><p class="meta2">设计背景：${x.design_background}</p><p class="desc">${x.cultural_notes}</p><p class="src"><span class="risk ${rc}">${rt} / ${x.credibility||'-'}</span></p><div class="number">#${x.number}</div><div class="actions"><button class="${own?'owned':''}" onclick="toggleOwned('${x.id}')">${own?'已拥有 ✓':'标记为已拥有'}</button></div></article>`;
+    const img=x.image_official_url||x.image_url||`https://placehold.co/640x800/f2f2f2/1f1f1f.png?text=${encodeURIComponent(x.entity+' '+x.year+' '+typeLabel)}`;
+    const capText=x.image_official_url?'图片：来源站点配图':'图片：馆藏图';
+    return `<article class="card"><div class="tag">${x.category==='club'?'俱乐部':'国家队'} · ${x.league} · ${x.year}</div><h3>${x.entity}</h3><div class="subtitle">${x.player} · ${x.brand} · ${typeLabel}</div><img class="kitimg" data-id="${x.id}" src="${img}" alt="${x.entity} ${x.year} ${typeLabel}球衣" loading="lazy"/><div class="imgcap" id="cap-${x.id}">${capText}</div><p class="meta2">设计背景：${x.design_background}</p><p class="desc">${x.cultural_notes}</p><p class="src"><span class="risk ${rc}">${rt} / ${x.credibility||'-'}</span></p><div class="number">#${x.number}</div><div class="actions"><button class="${own?'owned':''}" onclick="toggleOwned('${x.id}')">${own?'已拥有 ✓':'标记为已拥有'}</button></div></article>`;
   }).join('');
   hydrateRealImages(items);
 }
@@ -134,6 +135,11 @@ async function hydrateRealImages(items){
     const el=document.querySelector(`img.kitimg[data-id="${it.id}"]`);
     if(!el) continue;
     const cap=document.getElementById(`cap-${it.id}`);
+    if(it.image_official_url){
+      el.src=it.image_official_url;
+      if(cap) cap.textContent='图片：来源站点配图';
+      continue;
+    }
     if(cache[it.id]){ el.src=cache[it.id]; if(cap) cap.textContent='图片：Wikimedia Commons'; continue; }
     try{
       const q=`${it.entity} ${it.year} ${it.type} football kit`;
