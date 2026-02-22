@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>球衣博物馆 · The Jersey Gazette</title>
+  <style>
+    :root {
+      --paper: #f7f2e8;
+      --ink: #1f1f1a;
+      --muted: #6b665d;
+      --line: #b8b0a3;
+      --accent: #7b1f1f;
+      --card: #fbf8f0;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: radial-gradient(ellipse at top, #fffdf7 0%, var(--paper) 60%);
+      font-family: "Times New Roman", "Songti SC", "STSong", serif;
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 24px auto;
+      padding: 14px 18px 30px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 24px rgba(40, 35, 25, 0.08);
+    }
+
+    .masthead {
+      border-top: 3px double var(--ink);
+      border-bottom: 3px double var(--ink);
+      padding: 14px 0 10px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .kicker {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+    }
+
+    .title {
+      margin: 6px 0 0;
+      font-size: clamp(34px, 7vw, 68px);
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .meta {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .lead {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 14px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .lead h2 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 4.5vw, 42px);
+      line-height: 1.08;
+    }
+
+    .lead p {
+      margin: 0;
+      color: #2d2b25;
+      font-size: 17px;
+      max-width: 64ch;
+    }
+
+    .quote {
+      border-left: 3px solid var(--ink);
+      padding-left: 10px;
+      font-style: italic;
+      font-size: 16px;
+      color: #2d2b26;
+      align-self: center;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px dashed var(--line);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      font: inherit;
+      border: 1px solid var(--line);
+      background: #fffdf9;
+      color: var(--ink);
+      padding: 8px 10px;
+    }
+
+    .catalog {
+      column-count: 3;
+      column-gap: 14px;
+    }
+
+    .card {
+      break-inside: avoid;
+      margin: 0 0 12px;
+      padding: 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      height: 3px;
+      background: repeating-linear-gradient(90deg, var(--ink) 0 14px, transparent 14px 20px);
+      opacity: 0.12;
+    }
+
+    .tag {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .card h3 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #3f3b34;
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      margin: 0;
+      font-size: 15px;
+      color: #2a2822;
+    }
+
+    .number {
+      margin-top: 10px;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+    }
+
+    .footer {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 920px) {
+      .lead { grid-template-columns: 1fr; }
+      .catalog { column-count: 2; }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+      .toolbar input { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 620px) {
+      .page { margin: 0; border: 0; box-shadow: none; }
+      .catalog { column-count: 1; }
+      .title { font-size: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <div class="kicker">vol. 1 · curated archive · since 2026</div>
+      <h1 class="title">球衣博物馆</h1>
+      <div class="meta">THE JERSEY GAZETTE · SPECIAL COLLECTION ISSUE</div>
+    </header>
+
+    <section class="lead">
+      <article>
+        <h2>当号码成为传说：<br>从木地板到世界舞台</h2>
+        <p>
+          这里不是商店，而是一份关于时代、风格与记忆的报纸档案。每件球衣都记录了一个瞬间：绝杀、冠军、逆转，
+          以及你在深夜看球时屏住呼吸的那一秒。
+        </p>
+      </article>
+      <aside class="quote">
+        “球衣是运动的史诗装帧。<br>
+        穿在身上的是布料，留在心里的是年代。”
+      </aside>
+    </section>
+
+    <section class="toolbar" aria-label="筛选工具">
+      <input id="search" placeholder="搜索球员 / 球队 / 关键词，例如：Jordan, Lakers, 三连冠" />
+      <select id="era">
+        <option value="all">全部年代</option>
+        <option value="80s">1980s</option>
+        <option value="90s">1990s</option>
+        <option value="00s">2000s</option>
+        <option value="10s">2010s</option>
+      </select>
+      <select id="sort">
+        <option value="year-desc">年份：新 → 旧</option>
+        <option value="year-asc">年份：旧 → 新</option>
+        <option value="name">球员名 A → Z</option>
+      </select>
+    </section>
+
+    <section id="catalog" class="catalog"></section>
+
+    <footer class="footer">ink, cotton & memory · jersey museum editorial desk</footer>
+  </main>
+
+  <script>
+    const collection = [
+      { player: "Michael Jordan", team: "Chicago Bulls", year: 1998, number: "23", era: "90s", note: "The Last Shot", desc: "红色主场战袍，定义了90年代篮球美学与王朝意志。" },
+      { player: "Kobe Bryant", team: "Los Angeles Lakers", year: 2010, number: "24", era: "10s", note: "Back-to-Back", desc: "紫金球衣在总决赛灯光下，留下曼巴时代的冷静与偏执。" },
+      { player: "Allen Iverson", team: "Philadelphia 76ers", year: 2001, number: "3", era: "00s", note: "The Answer", desc: "把街头风格与职业赛场融合，重写球衣文化的语法。" },
+      { player: "Magic Johnson", team: "Los Angeles Lakers", year: 1987, number: "32", era: "80s", note: "Showtime", desc: "湖人黄金年代的节奏发动机，明亮、华丽、不可复制。" },
+      { player: "Larry Bird", team: "Boston Celtics", year: 1986, number: "33", era: "80s", note: "Three-Point Crown", desc: "绿色客场战袍，冷冽而精准，像一篇没有废句的社论。" },
+      { player: "Tim Duncan", team: "San Antonio Spurs", year: 2003, number: "21", era: "00s", note: "Fundamentals", desc: "朴素银黑，低调到近乎安静，却把冠军写得很大声。" },
+      { player: "Yao Ming", team: "Houston Rockets", year: 2004, number: "11", era: "00s", note: "Global Bridge", desc: "一件球衣连接两种篮球语言，也连接了两代观众。" },
+      { player: "LeBron James", team: "Miami Heat", year: 2013, number: "6", era: "10s", note: "Heat Legacy", desc: "热火黑红配色里，速度、力量与战术成熟达到平衡。" },
+      { player: "Dirk Nowitzki", team: "Dallas Mavericks", year: 2011, number: "41", era: "10s", note: "One-Leg Fade", desc: "蓝白球衣见证单核夺冠神话，以及永不过时的后仰。" },
+      { player: "Stephen Curry", team: "Golden State Warriors", year: 2016, number: "30", era: "10s", note: "Range Revolution", desc: "三分线被重新定义，球衣也成为小球时代的旗帜。" }
+    ];
+
+    const catalog = document.getElementById("catalog");
+    const search = document.getElementById("search");
+    const era = document.getElementById("era");
+    const sort = document.getElementById("sort");
+
+    function render(items) {
+      catalog.innerHTML = items.map(item => `
+        <article class="card">
+          <div class="tag">${item.year} · ${item.team}</div>
+          <h3>${item.player}</h3>
+          <div class="subtitle">${item.note}</div>
+          <p class="desc">${item.desc}</p>
+          <div class="number">#${item.number}</div>
+        </article>
+      `).join("");
+    }
+
+    function applyFilters() {
+      const q = search.value.trim().toLowerCase();
+      const eraValue = era.value;
+      const sortValue = sort.value;
+
+      let items = collection.filter(item => {
+        const passEra = eraValue === "all" || item.era === eraValue;
+        const blob = `${item.player} ${item.team} ${item.note} ${item.desc}`.toLowerCase();
+        const passQuery = !q || blob.includes(q);
+        return passEra && passQuery;
+      });
+
+      if (sortValue === "year-desc") items.sort((a, b) => b.year - a.year);
+      if (sortValue === "year-asc") items.sort((a, b) => a.year - b.year);
+      if (sortValue === "name") items.sort((a, b) => a.player.localeCompare(b.player));
+
+      render(items);
+    }
+
+    [search, era, sort].forEach(el => el.addEventListener("input", applyFilters));
+    applyFilters();
+  </script>
+</body>
+</html>
