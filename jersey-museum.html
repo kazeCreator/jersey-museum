@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>足球球衣博物馆 · The Football Jersey Gazette</title>
+  <title>绿茵球衣馆 · Football Jersey Stories</title>
   <style>
     :root { --paper:#f7f2e8; --ink:#1f1f1a; --muted:#6b665d; --line:#b8b0a3; --accent:#7b1f1f; --card:#fbf8f0; }
     * { box-sizing: border-box; }
@@ -46,17 +46,17 @@
 <body>
   <main class="page">
     <header class="masthead">
-      <div class="kicker">vol. 2 · football archive · with sync engine</div>
-      <h1 class="title">足球球衣博物馆</h1>
-      <div class="meta">THE FOOTBALL JERSEY GAZETTE · V2</div>
+      <div class="kicker">weekly selection · football archive</div>
+      <h1 class="title">绿茵球衣馆</h1>
+      <div class="meta">FOOTBALL JERSEY STORIES</div>
     </header>
 
     <section class="lead">
       <article>
-        <h2>V2：全量数据库引擎（增量同步 + 去重合并 + 可信度评分）</h2>
-        <p>你可以继续标记“已拥有”，并一键执行增量同步。系统会自动按 key 去重合并，保留更高可信度与更新验证时间。</p>
+        <h2>把喜欢的球衣，慢慢收藏成一座博物馆</h2>
+        <p>按球员、球队、年代浏览经典款，喜欢就标记“已拥有”。也可以点一下同步，看看有没有新加入的球衣故事。</p>
       </article>
-      <aside class="quote">“先有可信度，再谈全量。”</aside>
+      <aside class="quote">“每一件球衣，都是一个赛季的情绪切片。”</aside>
     </section>
 
     <section class="stats">
@@ -72,11 +72,11 @@
       <select id="era"><option value="all">全部年代</option><option value="90s">1990s</option><option value="00s">2000s</option><option value="10s">2010s</option></select>
       <select id="sort"><option value="year-desc">年份：新→旧</option><option value="year-asc">年份：旧→新</option><option value="name">球员名 A→Z</option><option value="cred">可信度高→低</option></select>
       <div class="switch"><button id="tab-all" class="active" type="button">全部</button><button id="tab-owned" type="button">只看已拥有</button></div>
-      <button id="sync" class="sync-btn" type="button">V2 增量同步</button>
+      <button id="sync" class="sync-btn" type="button">更新馆藏</button>
     </section>
 
     <section id="catalog" class="catalog"></section>
-    <footer class="footer">sources: club / brand / federation / media · merge strategy: key+credibility+last_verified</footer>
+    <footer class="footer">from clubs, brands and official football media</footer>
   </main>
 
   <script>
