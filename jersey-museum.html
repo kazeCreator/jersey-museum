@@ -119,15 +119,17 @@ function render(items){
 }
 
 async function fetchWikimediaImage(query){
-  const url='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=' + encodeURIComponent(query) + '&gsrlimit=6&prop=pageimages|info&pithumbsize=800&inprop=url&format=json&origin=*';
+  // 优先在 Wikimedia Commons 的文件命名空间里找“Kit”图片文件
+  const url='https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srlimit=8&format=json&origin=*&srsearch=' + encodeURIComponent(query);
   const res=await fetch(url);
   if(!res.ok) return null;
   const data=await res.json();
-  const pages=data?.query?.pages ? Object.values(data.query.pages) : [];
-  const isJerseyTitle = t => /kit|jersey|shirt|home kit|away kit/i.test(t || '');
-  const jerseyHit = pages.find(p => p?.thumbnail?.source && isJerseyTitle(p?.title));
-  if (jerseyHit) return jerseyHit.thumbnail.source;
-  return null;
+  const rows=data?.query?.search || [];
+  const pick=rows.find(r => /File:.*(Kit|kit|jersey|shirt)/.test(r.title || '')) || rows[0];
+  if(!pick?.title) return null;
+  const fileName=(pick.title || '').replace(/^File:/,'');
+  if(!fileName) return null;
+  return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(fileName);
 }
 
 async function hydrateRealImages(items){
@@ -144,7 +146,7 @@ async function hydrateRealImages(items){
     }
     if(cache[it.id]){ el.src=cache[it.id]; if(cap) cap.textContent='图片：Wikimedia Commons'; continue; }
     try{
-      const q=`${it.entity} ${it.year} ${it.type} football kit jersey`;
+      const q=`${it.entity} ${it.year} ${it.type==='Home'?'home':'away'} kit`;
       const hit=await fetchWikimediaImage(q);
       if(hit){
         cache[it.id]=hit;
