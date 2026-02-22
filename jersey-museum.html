@@ -19,6 +19,7 @@
     .catalog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
     .card{padding:12px;background:var(--card);border:1px solid var(--line);position:relative;min-height:250px}.card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:repeating-linear-gradient(90deg,var(--ink)0 14px,transparent 14px 20px);opacity:.12}
     .kitimg{width:100%;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--line);margin:6px 0 8px;background:#eee}
+    .imgcap{font-size:12px;color:var(--muted);margin:-2px 0 8px}
     .card h3{margin:0 0 2px;font-size:22px}.subtitle,.meta2,.desc,.src{font-size:14px;margin:0 0 6px}.number{margin-top:8px;font-size:26px;font-weight:700;color:var(--accent)}
     .actions{display:flex;gap:8px;margin-top:8px}.owned{background:#1e4c2f;color:#fff}
     .risk{display:inline-block;padding:2px 6px;border:1px solid var(--line);font-size:12px}.low{background:#e6f4ea}.mid{background:#fff4dd}.high{background:#fde8e8}
@@ -111,8 +112,40 @@ function render(items){
   c.innerHTML=items.map(x=>{const own=state.owned.has(x.id);const [rt,rc]=riskClass(x.credibility||0);
     const typeLabel=x.type==='Home'?'主场':x.type==='Away'?'客场':x.type;
     const img=x.image_url||`https://placehold.co/640x800/f2f2f2/1f1f1f.png?text=${encodeURIComponent(x.entity+' '+x.year+' '+typeLabel)}`;
-    return `<article class="card"><div class="tag">${x.category==='club'?'俱乐部':'国家队'} · ${x.league} · ${x.year}</div><h3>${x.entity}</h3><div class="subtitle">${x.player} · ${x.brand} · ${typeLabel}</div><img class="kitimg" src="${img}" alt="${x.entity} ${x.year} ${typeLabel}球衣" loading="lazy"/><p class="meta2">设计背景：${x.design_background}</p><p class="desc">${x.cultural_notes}</p><p class="src"><span class="risk ${rc}">${rt} / ${x.credibility||'-'}</span></p><div class="number">#${x.number}</div><div class="actions"><button class="${own?'owned':''}" onclick="toggleOwned('${x.id}')">${own?'已拥有 ✓':'标记为已拥有'}</button></div></article>`;
+    return `<article class="card"><div class="tag">${x.category==='club'?'俱乐部':'国家队'} · ${x.league} · ${x.year}</div><h3>${x.entity}</h3><div class="subtitle">${x.player} · ${x.brand} · ${typeLabel}</div><img class="kitimg" data-id="${x.id}" src="${img}" alt="${x.entity} ${x.year} ${typeLabel}球衣" loading="lazy"/><div class="imgcap" id="cap-${x.id}">图片：馆藏图</div><p class="meta2">设计背景：${x.design_background}</p><p class="desc">${x.cultural_notes}</p><p class="src"><span class="risk ${rc}">${rt} / ${x.credibility||'-'}</span></p><div class="number">#${x.number}</div><div class="actions"><button class="${own?'owned':''}" onclick="toggleOwned('${x.id}')">${own?'已拥有 ✓':'标记为已拥有'}</button></div></article>`;
   }).join('');
+  hydrateRealImages(items);
+}
+
+async function fetchWikimediaImage(query){
+  const url='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=' + encodeURIComponent(query) + '&gsrlimit=1&prop=pageimages|info&pithumbsize=800&inprop=url&format=json&origin=*';
+  const res=await fetch(url);
+  if(!res.ok) return null;
+  const data=await res.json();
+  const pages=data?.query?.pages ? Object.values(data.query.pages) : [];
+  const p=pages[0];
+  return p?.thumbnail?.source || null;
+}
+
+async function hydrateRealImages(items){
+  const cacheKey='jerseyImageCacheV1';
+  const cache=JSON.parse(localStorage.getItem(cacheKey)||'{}');
+  for(const it of items){
+    const el=document.querySelector(`img.kitimg[data-id="${it.id}"]`);
+    if(!el) continue;
+    const cap=document.getElementById(`cap-${it.id}`);
+    if(cache[it.id]){ el.src=cache[it.id]; if(cap) cap.textContent='图片：Wikimedia Commons'; continue; }
+    try{
+      const q=`${it.entity} ${it.year} ${it.type} football kit`;
+      const hit=await fetchWikimediaImage(q);
+      if(hit){
+        cache[it.id]=hit;
+        el.src=hit;
+        if(cap) cap.textContent='图片：Wikimedia Commons';
+      }
+    }catch(e){}
+  }
+  localStorage.setItem(cacheKey, JSON.stringify(cache));
 }
 
 function applyFilters(){
